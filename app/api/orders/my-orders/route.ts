@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    // Find orders by customer email (TS FIX → cast to any)
+    // Find orders by customer email. Cast filter to `any` to satisfy Mongoose's
+    // overly strict `Query` typings in TypeScript, while keeping runtime behavior.
     const orders = await Order.find({ "customer.email": user.email } as any)
       .sort({ createdAt: -1 })
       .lean();

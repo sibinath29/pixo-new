@@ -1,22 +1,14 @@
-
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  image?: string;
-<<<<<<< HEAD
-  emailVerified: boolean;
-  emailVerifiedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-=======
+  image?: string | null;
   emailVerified?: boolean | null;
   emailVerifiedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
->>>>>>> db9cbf1 (Fix Mongoose query type for products API)
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -26,7 +18,7 @@ const UserSchema: Schema<IUser> = new Schema(
     password: { type: String, required: true },
     image: { type: String, default: null },
 
-    // REQUIRED FOR YOUR REGISTER CODE
+    // Fields required by the register/login code
     emailVerified: { type: Boolean, default: false },
     emailVerifiedAt: { type: Date, default: null },
   },
