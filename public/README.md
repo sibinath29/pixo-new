@@ -7,3 +7,5 @@ Supported formats: PNG, JPG, SVG, WebP
 The logo will automatically scale for mobile and desktop devices.
 
 
+
+

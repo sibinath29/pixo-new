@@ -14,9 +14,10 @@ async function getCachedProducts(): Promise<Product[]> {
   }
   
   try {
-    const response = await fetch("/api/products");
+    const response = await fetch("/api/products", { cache: "no-store" });
     if (!response.ok) {
-      throw new Error("Failed to fetch products");
+      console.warn("API request failed, returning empty array");
+      return [];
     }
     const data = await response.json();
     productsCache = Array.isArray(data.products) ? data.products : [];

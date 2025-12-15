@@ -12,8 +12,13 @@ export default function PosterSlideshow() {
 
   useEffect(() => {
     const loadPosters = async () => {
-      const loadedPosters = await getPosters();
-      setPosters(loadedPosters);
+      try {
+        const loadedPosters = await getPosters();
+        setPosters(loadedPosters);
+      } catch (error) {
+        console.error("Error loading posters:", error);
+        setPosters([]);
+      }
     };
     
     loadPosters();
@@ -42,8 +47,13 @@ export default function PosterSlideshow() {
   // Don't render if no posters available
   if (!currentPoster || slides.length === 0) {
     return (
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-black via-ink to-black flex items-center justify-center">
-        <p className="text-white/60 text-sm">Loading posters...</p>
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-black via-ink to-black flex flex-col items-center justify-center gap-3 p-6">
+        <p className="text-white/60 text-sm">No posters available</p>
+        <p className="text-white/40 text-xs text-center max-w-xs">
+          {posters.length === 0 
+            ? "Add posters in the admin dashboard to see them here"
+            : "Loading posters..."}
+        </p>
       </div>
     );
   }

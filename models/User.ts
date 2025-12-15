@@ -6,10 +6,17 @@ export interface IUser extends Document {
   email: string;
   password: string;
   image?: string;
+<<<<<<< HEAD
   emailVerified: boolean;
   emailVerifiedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+=======
+  emailVerified?: boolean | null;
+  emailVerifiedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+>>>>>>> db9cbf1 (Fix Mongoose query type for products API)
 }
 
 const UserSchema: Schema<IUser> = new Schema(
