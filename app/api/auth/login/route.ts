@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // Find user
-    const user = await User.findOne({ email });
+    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
+    const user = await User.findOne({ email } as any);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },

@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
+    const existingUser = await User.findOne({ email } as any);
     if (existingUser) {
       return NextResponse.json(
         { error: "User already exists with this email" },

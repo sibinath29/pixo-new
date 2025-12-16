@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if product with same slug already exists
-    const existingProduct = await Product.findOne({ slug });
+    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
+    const existingProduct = await Product.findOne({ slug } as any);
     if (existingProduct) {
       return NextResponse.json(
         { success: false, error: "Product with this slug already exists" },
