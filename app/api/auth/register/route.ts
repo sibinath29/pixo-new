@@ -43,16 +43,17 @@ export async function POST(req: NextRequest) {
     // Verify OTP if provided
     let emailVerified = false;
     if (otpCode) {
-      const otpRecord = await OTP.findOne({ email: email.toLowerCase(), code: otpCode });
+      // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
+      const otpRecord = await OTP.findOne({ email: email.toLowerCase(), code: otpCode } as any);
 
       if (otpRecord && new Date() <= otpRecord.expiresAt) {
         emailVerified = true;
 
         // Mark OTP as verified if not already, then delete
         if (!otpRecord.verified) {
-          await OTP.updateOne({ _id: otpRecord._id }, { verified: true });
+          await OTP.updateOne({ _id: otpRecord._id } as any, { verified: true });
         }
-        await OTP.deleteOne({ _id: otpRecord._id });
+        await OTP.deleteOne({ _id: otpRecord._id } as any);
       } else {
         return NextResponse.json(
           { error: "Invalid or expired OTP. Please verify your email first." },

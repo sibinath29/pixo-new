@@ -16,10 +16,11 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // Find OTP
+    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
     const otpRecord = await OTP.findOne({
       email: email.toLowerCase(),
       code,
-    });
+    } as any);
 
     if (!otpRecord) {
       return NextResponse.json(
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Check if expired
     if (new Date() > otpRecord.expiresAt) {
-      await OTP.deleteOne({ _id: otpRecord._id });
+      await OTP.deleteOne({ _id: otpRecord._id } as any);
       return NextResponse.json(
         { error: "Verification code has expired" },
         { status: 400 }
@@ -38,8 +39,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Mark OTP as verified (don't delete yet - will be deleted after registration)
+    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
     await OTP.updateOne(
-      { _id: otpRecord._id },
+      { _id: otpRecord._id } as any,
       { verified: true }
     );
 

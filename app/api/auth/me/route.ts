@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     // Find user
-    const user = await User.findById(decoded.userId);
+    // Cast to `any` to satisfy Mongoose's strict TypeScript typings
+    const user = await User.findById(decoded.userId as any);
     if (!user) {
       return NextResponse.json(
         { error: "User not found" },

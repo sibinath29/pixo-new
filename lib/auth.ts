@@ -23,7 +23,8 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
     }
 
     await connectDB();
-    const user = await User.findById(decoded.userId);
+    // Cast to `any` to satisfy Mongoose's strict TypeScript typings
+    const user = await User.findById(decoded.userId as any);
     
     if (!user) {
       return null;
