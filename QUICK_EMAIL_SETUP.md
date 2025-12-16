@@ -52,19 +52,19 @@ After adding the credentials:
 
 ```env
 # MongoDB Connection
-MONGODB_URI=mongodb+srv://Pixo:Pixo_2025@pixo-cluster.8yzvx7e.mongodb.net/pixo?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pixo?retryWrites=true&w=majority
 
-# JWT Secret
-JWT_SECRET=RsxXycIH3O8AKWDBCWYcfHFPsX1IJkSkfYsCmNlxP90=
+# JWT Secret (generate with: openssl rand -base64 32)
+JWT_SECRET=your_jwt_secret_here
 
-# NextAuth
-NEXTAUTH_SECRET=RsxXycIH3O8AKWDBCWYcfHFPsX1IJkSkfYsCmNlxP90=
+# NextAuth (generate with: openssl rand -base64 32)
+NEXTAUTH_SECRET=your_nextauth_secret_here
 NEXTAUTH_URL=http://localhost:3000
 
 # Email Configuration
 EMAIL_SERVICE=gmail
-EMAIL_USER=sibikarthi7@gmail.com
-EMAIL_PASSWORD=abcdefghijklmnop
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-16-character-app-password
 ```
 
 ## Troubleshooting
