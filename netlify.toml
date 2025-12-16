@@ -2,8 +2,7 @@
   command = "npm run build"
   publish = ".next"
 
-# Disable secrets scanning - secrets are properly stored as environment variables
-# Documentation files may contain example env var names, which triggers false positives
-[build.environment]
-  SECRETS_SCAN_ENABLED = false
+# Note: Secrets scanning configuration should be done in Netlify UI
+# Go to Site settings > Build & deploy > Environment variables
+# Add SECRETS_SCAN_ENABLED = false if needed
 
