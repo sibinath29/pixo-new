@@ -50,12 +50,12 @@ export default function ProductDetail({ params }: Props) {
   return (
     <div className="grid gap-6 sm:gap-8 md:gap-10 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="glass relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-3xl">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-3xl flex items-center justify-center">
           {product.image ? (
             <img
               src={product.image}
               alt={product.title}
-              className="w-full h-full object-cover rounded-2xl sm:rounded-3xl"
+              className="w-full h-full object-contain rounded-2xl sm:rounded-3xl"
             />
           ) : (
             <div

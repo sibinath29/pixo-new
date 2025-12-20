@@ -84,7 +84,7 @@ export default function PosterSlideshow() {
               <img
                 src={currentPoster.image}
                 alt={currentPoster.title}
-                className="h-full w-full rounded-xl sm:rounded-2xl border-2 border-cyan-neon/40 shadow-neon transition-all duration-500 group-hover:border-cyan-neon group-hover:shadow-[0_0_30px_rgba(8,247,254,0.5)] object-cover"
+                className="h-full w-full rounded-xl sm:rounded-2xl border-2 border-cyan-neon/40 shadow-neon transition-all duration-500 group-hover:border-cyan-neon group-hover:shadow-[0_0_30px_rgba(8,247,254,0.5)] object-contain"
               />
             ) : (
               <div

@@ -15,12 +15,12 @@ export default function ProductCard({ product }: { product: Product }) {
         href={`/product/${product.slug}`}
         className="flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 bg-black/40 hover:border-cyan-neon/50 transition-all duration-300"
       >
-        <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-ink">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-ink flex items-center justify-center">
           {product.image ? (
             <img
               src={product.image}
               alt={product.title}
-              className="w-full h-full object-cover rounded-t-xl sm:rounded-t-2xl"
+              className="w-full h-full object-contain rounded-t-xl sm:rounded-t-2xl"
             />
           ) : (
             <div
