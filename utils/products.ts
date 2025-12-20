@@ -5,7 +5,7 @@ import type { Product } from "@/data/products";
 // Cache for products to avoid repeated API calls
 let productsCache: Product[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 5000; // 5 second cache
+const CACHE_DURATION = 30000; // 30 second cache (increased from 5s)
 
 async function getCachedProducts(): Promise<Product[]> {
   const now = Date.now();
@@ -14,18 +14,29 @@ async function getCachedProducts(): Promise<Product[]> {
   }
   
   try {
-    const response = await fetch("/api/products", { cache: "no-store" });
+    // Use Next.js fetch with caching enabled
+    const response = await fetch("/api/products", {
+      next: { revalidate: 60 }, // Revalidate every 60 seconds
+    });
+    
     if (!response.ok) {
+      // If cache exists, return it even if request failed
+      if (productsCache) {
+        console.warn("API request failed, returning cached data");
+        return productsCache;
+      }
       console.warn("API request failed, returning empty array");
       return [];
     }
+    
     const data = await response.json();
     productsCache = Array.isArray(data.products) ? data.products : [];
     cacheTimestamp = now;
     return productsCache;
   } catch (error) {
     console.error("Error loading products:", error);
-    return [];
+    // Return cached data if available, otherwise empty array
+    return productsCache || [];
   }
 }
 

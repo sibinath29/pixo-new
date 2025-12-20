@@ -3,6 +3,9 @@ import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
 // GET all products or filter by type
+// Cache for 60 seconds (ISR - Incremental Static Regeneration)
+export const revalidate = 60;
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -10,23 +13,27 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type"); // "poster" or "polaroid"
 
-    // Explicitly type the query as `any` to satisfy Mongoose's `find` typings
-    // while still allowing an optional `type` filter.
     const query: any = type ? { type } : {};
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    // Use lean() for faster queries - returns plain JavaScript objects instead of Mongoose documents
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .lean()
+      .select("-__v"); // Exclude version key for smaller response
 
-    return NextResponse.json({ success: true, products }, { status: 200 });
+    // Add cache headers for client-side caching
+    return NextResponse.json(
+      { success: true, products },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error fetching products:", error);
-    
-    // If it's a connection error, return empty array instead of error
-    if (error.message?.includes("connection") || error.message?.includes("IP") || error.message?.includes("whitelist")) {
-      console.warn("Database connection failed, returning empty products array");
-      return NextResponse.json({ success: true, products: [] }, { status: 200 });
-    }
-    
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch products", products: [] },
+      { success: false, error: error.message || "Failed to fetch products" },
       { status: 500 }
     );
   }
@@ -60,8 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if product with same slug already exists
-    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
-    const existingProduct = await Product.findOne({ slug } as any);
+    const existingProduct = await Product.findOne({ slug });
     if (existingProduct) {
       return NextResponse.json(
         { success: false, error: "Product with this slug already exists" },

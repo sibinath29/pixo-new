@@ -3,6 +3,9 @@ import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
 // GET single product by slug
+// Cache for 60 seconds
+export const revalidate = 60;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
@@ -10,7 +13,9 @@ export async function GET(
   try {
     await connectDB();
 
-    const product = await Product.findOne({ slug: params.slug }as any);
+    const product = await Product.findOne({ slug: params.slug } as any)
+      .lean()
+      .select("-__v");
 
     if (!product) {
       return NextResponse.json(
@@ -19,7 +24,15 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, product }, { status: 200 });
+    return NextResponse.json(
+      { success: true, product },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error fetching product:", error);
     return NextResponse.json(
