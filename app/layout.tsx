@@ -37,7 +37,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <NeonCursor />
                 <Header />
                 <PageTransition>
-                  <main className="max-w-6xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16 pt-20 sm:pt-24 md:pt-28">{children}</main>
+                  <main 
+                    className="max-w-6xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16 pt-20 sm:pt-24 md:pt-28"
+                    style={{ 
+                      willChange: "scroll-position",
+                      transform: "translateZ(0)",
+                      WebkitTransform: "translateZ(0)"
+                    }}
+                  >
+                    {children}
+                  </main>
                 </PageTransition>
                 <Footer />
               </CartProvider>

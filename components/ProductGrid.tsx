@@ -1,3 +1,6 @@
+"use client";
+
+import { memo } from "react";
 import type { Product } from "@/data/products";
 import ProductCard from "./ProductCard";
 
@@ -7,7 +10,7 @@ type Props = {
   products: Product[];
 };
 
-export default function ProductGrid({ title, subtitle, products }: Props) {
+function ProductGrid({ title, subtitle, products }: Props) {
   return (
     <section className="space-y-4 sm:space-y-5 md:space-y-6">
       {(title || subtitle) && (
@@ -16,7 +19,13 @@ export default function ProductGrid({ title, subtitle, products }: Props) {
           {subtitle && <p className="text-sm sm:text-base text-white/60">{subtitle}</p>}
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div 
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+        style={{ 
+          contain: "layout style paint",
+          willChange: "scroll-position"
+        }}
+      >
         {products.map((product) => (
           <ProductCard key={product.slug} product={product} />
         ))}
@@ -24,4 +33,6 @@ export default function ProductGrid({ title, subtitle, products }: Props) {
     </section>
   );
 }
+
+export default memo(ProductGrid);
 

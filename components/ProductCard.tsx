@@ -2,26 +2,76 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import type { Product } from "@/data/products";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "50px" } // Start loading 50px before entering viewport
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Detect mobile/touch device
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   return (
     <motion.div
-      whileHover={{ y: -6, boxShadow: "0 10px 40px rgba(8, 247, 254, 0.25)" }}
+      ref={cardRef}
+      whileHover={isMobile ? {} : { y: -6, boxShadow: "0 10px 40px rgba(8, 247, 254, 0.25)" }}
       transition={{ duration: 0.28 }}
       className="h-full"
+      style={{ 
+        willChange: isVisible ? "transform" : "auto",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)"
+      }}
     >
       <Link
         href={`/product/${product.slug}`}
         className="flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 bg-black/40 hover:border-cyan-neon/50 transition-all duration-300"
+        style={{ 
+          contain: "layout style paint",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)"
+        }}
       >
         <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-ink flex items-center justify-center">
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.title}
-              className="w-full h-full object-contain rounded-t-xl sm:rounded-t-2xl"
-            />
+          {product.image && isVisible ? (
+            <>
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-black/80 animate-pulse" />
+              )}
+              <img
+                src={product.image}
+                alt={product.title}
+                loading="lazy"
+                decoding="async"
+                className={`w-full h-full object-contain rounded-t-xl sm:rounded-t-2xl transition-opacity duration-300 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                style={{ willChange: "opacity" }}
+              />
+            </>
+          ) : product.image ? (
+            <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-black/80 animate-pulse" />
           ) : (
             <div
               className="absolute inset-0 rounded-t-xl sm:rounded-t-2xl"
