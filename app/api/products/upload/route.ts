@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// This route is kept for backward compatibility but is no longer used
+// Images are now compressed client-side and sent directly as base64
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
