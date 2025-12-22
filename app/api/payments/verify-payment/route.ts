@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Send notification email to admin
-      await sendAdminOrderNotification("sibikarthi7@gmail.com", {
+      await sendAdminOrderNotification("pixo.shopoff@gmail.com", {
         orderId: order.orderId,
         customerName: order.customer.name,
         customerEmail: order.customer.email,

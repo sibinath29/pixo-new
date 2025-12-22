@@ -79,7 +79,7 @@ export default function AdminLogin() {
       if (data.success) {
         setError("");
         setOtpSent(true);
-        alert("OTP has been resent to sibikarthi7@gmail.com");
+        alert("OTP has been resent to pixo.shopoff@gmail.com");
       } else {
         setError(data.error || "Failed to resend OTP. Please try again.");
       }
@@ -154,7 +154,7 @@ export default function AdminLogin() {
                   autoFocus
                 />
                 <p className="mt-2 text-xs text-white/50 text-center">
-                  OTP sent to sibikarthi7@gmail.com
+                  OTP sent to pixo.shopoff@gmail.com
                 </p>
               </div>
 

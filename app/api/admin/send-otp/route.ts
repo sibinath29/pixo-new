@@ -4,7 +4,7 @@ import OTP from "@/models/OTP";
 import { generateOTP, getOTPExpiry } from "@/lib/otp";
 import { sendOTPEmail } from "@/lib/email";
 
-const ADMIN_EMAIL = "sibikarthi7@gmail.com";
+const ADMIN_EMAIL = "pixo.shopoff@gmail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "pixo2024";
 
 export async function POST(req: NextRequest) {

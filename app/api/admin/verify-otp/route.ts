@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import OTP from "@/models/OTP";
 
-const ADMIN_EMAIL = "sibikarthi7@gmail.com";
+const ADMIN_EMAIL = "pixo.shopoff@gmail.com";
 
 export async function POST(req: NextRequest) {
   try {
