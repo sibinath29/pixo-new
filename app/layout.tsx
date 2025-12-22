@@ -3,7 +3,6 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import NeonCursor from "@/components/NeonCursor";
 import { PageTransition } from "./providers";
 import { CartProvider } from "@/contexts/CartContext";
 import { AdminProvider } from "@/contexts/AdminContext";
@@ -34,7 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <UserProvider>
             <AdminProvider>
               <CartProvider>
-                <NeonCursor />
                 <Header />
                 <PageTransition>
                   <main 
