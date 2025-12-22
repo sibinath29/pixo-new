@@ -1,42 +1,17 @@
-"use client";
-
-import { useMemo, useState, useEffect } from "react";
-import FilterBar from "@/components/FilterBar";
-import ProductGrid from "@/components/ProductGrid";
-import { getPosters } from "@/utils/products";
-import type { Product } from "@/data/products";
+import PostersClient from "./posters-client";
+import { getPostersServer } from "@/lib/products-server";
 
 const filters = ["All", "Movies", "Sports", "Cars", "Anime", "Music", "More"];
 
-export default function PostersPage() {
-  const [active, setActive] = useState<string>("All");
-  const [posters, setPosters] = useState<Product[]>([]);
+// Revalidate every 60 seconds to keep data fresh
+export const revalidate = 60;
 
-  useEffect(() => {
-    const loadPosters = async () => {
-      const loadedPosters = await getPosters();
-      setPosters(loadedPosters);
-    };
-    
-    loadPosters();
-    
-    // Listen for product updates
-    window.addEventListener("productsUpdated", loadPosters);
-    
-    return () => {
-      window.removeEventListener("productsUpdated", loadPosters);
-    };
-  }, []);
+export default async function PostersPage() {
+  // Fetch posters on the server - this happens before the page is sent to the client
+  const posters = await getPostersServer();
 
-  const filtered = useMemo(() => {
-    if (active === "All") return posters;
-    return posters.filter((item) => {
-      if (Array.isArray(item.category)) {
-        return item.category.includes(active);
-      }
-      return item.category === active;
-    });
-  }, [active, posters]);
+  return <PostersClient initialPosters={posters} filters={filters} />;
+}
 
   return (
     <div className="space-y-6 sm:space-y-7 md:space-y-8">

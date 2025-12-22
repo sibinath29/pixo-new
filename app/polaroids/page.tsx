@@ -1,42 +1,17 @@
-"use client";
-
-import { useMemo, useState, useEffect } from "react";
-import FilterBar from "@/components/FilterBar";
-import ProductGrid from "@/components/ProductGrid";
-import { getPolaroids } from "@/utils/products";
-import type { Product } from "@/data/products";
+import PolaroidsClient from "./polaroids-client";
+import { getPolaroidsServer } from "@/lib/products-server";
 
 const filters = ["All", "Movies", "Sports", "Cars", "Anime", "Music", "More"];
 
-export default function PolaroidsPage() {
-  const [active, setActive] = useState<string>("All");
-  const [polaroids, setPolaroids] = useState<Product[]>([]);
+// Revalidate every 60 seconds to keep data fresh
+export const revalidate = 60;
 
-  useEffect(() => {
-    const loadPolaroids = async () => {
-      const loadedPolaroids = await getPolaroids();
-      setPolaroids(loadedPolaroids);
-    };
-    
-    loadPolaroids();
-    
-    // Listen for product updates
-    window.addEventListener("productsUpdated", loadPolaroids);
-    
-    return () => {
-      window.removeEventListener("productsUpdated", loadPolaroids);
-    };
-  }, []);
+export default async function PolaroidsPage() {
+  // Fetch polaroids on the server - this happens before the page is sent to the client
+  const polaroids = await getPolaroidsServer();
 
-  const filtered = useMemo(() => {
-    if (active === "All") return polaroids;
-    return polaroids.filter((item) => {
-      if (Array.isArray(item.category)) {
-        return item.category.includes(active);
-      }
-      return item.category === active;
-    });
-  }, [active, polaroids]);
+  return <PolaroidsClient initialPolaroids={polaroids} filters={filters} />;
+}
 
   return (
     <div className="space-y-6 sm:space-y-7 md:space-y-8">

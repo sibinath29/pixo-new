@@ -1,8 +1,0 @@
-[build]
-  command = "npm run build"
-  publish = ".next"
-
-# Note: Secrets scanning configuration should be done in Netlify UI
-# Go to Site settings > Build & deploy > Environment variables
-# Add SECRETS_SCAN_ENABLED = false if needed
-

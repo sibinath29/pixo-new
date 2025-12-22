@@ -82,9 +82,9 @@ export default function AddProduct() {
         return;
       }
       
-      // Validate file size (max 5MB for base64 storage)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size must be less than 5MB");
+      // Validate file size (max 15MB)
+      if (file.size > 15 * 1024 * 1024) {
+        alert("Image size must be less than 15MB");
         return;
       }
 

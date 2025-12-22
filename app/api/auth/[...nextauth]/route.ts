@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+import { handlers } from "./auth";
+=======
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -29,4 +32,9 @@ const { handlers } = NextAuth({
   },
   secret: process.env.NEXTAUTH_SECRET,
 });
+
+export const { GET, POST } = handlers;
+
+>>>>>>> db9cbf1 (Fix Mongoose query type for products API)
+
 export const { GET, POST } = handlers;

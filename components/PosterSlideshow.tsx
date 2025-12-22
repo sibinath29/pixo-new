@@ -2,30 +2,33 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { getPosters } from "@/utils/products";
 import type { Product } from "@/data/products";
 import Link from "next/link";
 
-export default function PosterSlideshow() {
-  const [posters, setPosters] = useState<Product[]>([]);
+type Props = {
+  initialPosters?: Product[];
+};
+
+export default function PosterSlideshow({ initialPosters = [] }: Props) {
+  const [posters, setPosters] = useState<Product[]>(initialPosters);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const loadPosters = async () => {
-      try {
-        const loadedPosters = await getPosters();
-        setPosters(loadedPosters);
-      } catch (error) {
-        console.error("Error loading posters:", error);
-        setPosters([]);
-      }
+    // Listen for product updates and refresh
+    const handleUpdate = () => {
+      fetch("/api/products?type=poster")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.products)) {
+            setPosters(data.products);
+          }
+        })
+        .catch(console.error);
     };
     
-    loadPosters();
-    window.addEventListener("productsUpdated", loadPosters);
-    
+    window.addEventListener("productsUpdated", handleUpdate);
     return () => {
-      window.removeEventListener("productsUpdated", loadPosters);
+      window.removeEventListener("productsUpdated", handleUpdate);
     };
   }, []);
 

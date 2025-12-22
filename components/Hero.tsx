@@ -3,8 +3,13 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import PosterSlideshow from "./PosterSlideshow";
+import type { Product } from "@/data/products";
 
-export default function Hero() {
+type Props = {
+  posters?: Product[];
+};
+
+export default function Hero({ posters = [] }: Props) {
   return (
     <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-glass p-4 sm:p-6 md:p-8 lg:p-12">
       <div className="absolute inset-0 opacity-60">
@@ -70,7 +75,7 @@ export default function Hero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.08 }}
         >
-          <PosterSlideshow />
+          <PosterSlideshow initialPosters={posters} />
         </motion.div>
       </div>
     </section>

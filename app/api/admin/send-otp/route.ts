@@ -26,8 +26,7 @@ export async function POST(req: NextRequest) {
     const expiresAt = getOTPExpiry();
 
     // Delete any existing OTPs for admin email
-    // Cast query to `any` to satisfy Mongoose's strict TypeScript typings
-    await OTP.deleteMany({ email: ADMIN_EMAIL.toLowerCase() } as any);
+    await OTP.deleteMany({ email: ADMIN_EMAIL.toLowerCase() });
 
     // Save new OTP
     await OTP.create({

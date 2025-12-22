@@ -1,33 +1,20 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
-import { getAllProducts } from "@/utils/products";
-import type { Product } from "@/data/products";
+import { getProductsServer, getPostersServer } from "@/lib/products-server";
 import Link from "next/link";
 
-export default function HomePage() {
-  const [featured, setFeatured] = useState<Product[]>([]);
+// Revalidate every 60 seconds to keep data fresh
+export const revalidate = 60;
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      const allProducts = await getAllProducts();
-      // Show first 4 products as featured, or all if less than 4
-      setFeatured(allProducts.slice(0, 4));
-    };
-    
-    loadProducts();
-    window.addEventListener("productsUpdated", loadProducts);
-    
-    return () => {
-      window.removeEventListener("productsUpdated", loadProducts);
-    };
-  }, []);
+export default async function HomePage() {
+  // Fetch products on the server - this happens before the page is sent to the client
+  const allProducts = await getProductsServer();
+  const featured = allProducts.slice(0, 4);
+  const posters = await getPostersServer();
 
   return (
     <div className="space-y-10 sm:space-y-12 md:space-y-14">
-      <Hero />
+      <Hero posters={posters} />
 
       {featured.length > 0 && (
         <ProductGrid
