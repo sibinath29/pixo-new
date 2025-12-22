@@ -52,7 +52,7 @@ export default function ShippingPolicy() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-white">Tracking Your Order</h2>
           <p>
-            Once your order ships, you will receive a tracking number via email. You can use this to track your package's journey to your doorstep.
+            Once your order ships, you will receive a tracking number via email. You can use this to track your package&apos;s journey to your doorstep.
           </p>
         </section>
 

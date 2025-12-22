@@ -27,7 +27,7 @@ export default function TermsAndConditions() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-white">Use License</h2>
           <p>
-            Permission is granted to temporarily access the materials on Pixo's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+            Permission is granted to temporarily access the materials on Pixo&apos;s website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
             <li>Modify or copy the materials</li>
@@ -68,7 +68,7 @@ export default function TermsAndConditions() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-white">Limitation of Liability</h2>
           <p>
-            In no event shall Pixo or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Pixo's website.
+            In no event shall Pixo or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Pixo&apos;s website.
           </p>
         </section>
 

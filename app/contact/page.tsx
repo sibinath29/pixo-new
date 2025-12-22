@@ -41,7 +41,7 @@ export default function ContactPage() {
           <div>
             <h2 className="text-2xl font-semibold text-white mb-4">Get in Touch</h2>
             <p className="text-white/80 mb-6">
-              Have a question about our products, orders, or need support? We're here to help!
+              Have a question about our products, orders, or need support? We&apos;re here to help!
             </p>
           </div>
 
@@ -71,7 +71,7 @@ export default function ContactPage() {
               <div className="text-cyan-neon text-4xl mb-4">✓</div>
               <h2 className="text-2xl font-semibold text-white">Message Sent!</h2>
               <p className="text-white/80">
-                Thank you for contacting us. We'll get back to you soon.
+                Thank you for contacting us. We&apos;ll get back to you soon.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
