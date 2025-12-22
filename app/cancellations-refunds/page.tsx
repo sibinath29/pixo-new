@@ -20,21 +20,27 @@ export default function CancellationsRefunds() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-white">Cancellation Policy</h2>
           <p>
-            You may cancel your order within 24 hours of placing it, provided the order has not yet been processed for printing. Once your order enters the printing stage, cancellation may not be possible.
+            You may cancel your order and request a refund only before we send you the order processing confirmation email. Once the order processing email has been manually sent, the order cannot be cancelled or refunded as it will have entered the production stage.
           </p>
           <p>
             To cancel an order, please contact us immediately at{" "}
             <a href="mailto:pixo.shopoff@gmail.com" className="text-cyan-neon hover:text-cyan-neon/80">
               pixo.shopoff@gmail.com
             </a>{" "}
-            with your order number.
+            with your order number before you receive the order processing email.
           </p>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-white">Refund Policy</h2>
           <p>
-            We want you to be completely satisfied with your purchase. If you are not satisfied, we offer refunds under the following circumstances:
+            <strong>Refunds are only available before the order processing email is sent.</strong> Once you receive the order processing confirmation email (which is sent manually), your order enters production and cannot be refunded.
+          </p>
+          <p className="text-cyan-neon font-semibold">
+            Important: Please check your email carefully. Once the order processing email is sent, refunds cannot be processed.
+          </p>
+          <p>
+            We also offer refunds under the following circumstances (even after processing):
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
             <li><strong>Damaged Products:</strong> If your product arrives damaged or defective, please contact us within 7 days of delivery with photos of the damage. We will provide a full refund or replacement.</li>
@@ -59,6 +65,7 @@ export default function CancellationsRefunds() {
             The following are not eligible for refund:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
+            <li><strong>Orders after processing email:</strong> Once the order processing email has been sent, refunds cannot be processed</li>
             <li>Custom or personalized products (unless damaged or defective)</li>
             <li>Products returned after 7 days of delivery</li>
             <li>Products that have been used, damaged by the customer, or not in original packaging</li>
