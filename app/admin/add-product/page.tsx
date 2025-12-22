@@ -21,7 +21,7 @@ export default function AddProduct() {
   });
   const [saved, setSaved] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [compressedImageData, setCompressedImageData] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -82,19 +82,19 @@ export default function AddProduct() {
         return;
       }
       
-      // Validate file size (max 15MB)
-      if (file.size > 15 * 1024 * 1024) {
-        alert("Image size must be less than 15MB");
+      // Validate file size (max 5MB to match server limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
         return;
       }
 
       try {
-        // Store the file for upload
-        setImageFile(file);
-        
-        // Compress image for preview only
+        // Compress image before storing (this will be used for both preview and upload)
         const compressedImage = await compressImage(file, 1200, 0.75);
         setImagePreview(compressedImage);
+        
+        // Store compressed base64 image directly (no need to upload - it's already base64)
+        setCompressedImageData(compressedImage);
       } catch (error) {
         console.error("Error processing image:", error);
         alert("Error processing image. Please try again.");
@@ -122,38 +122,8 @@ export default function AddProduct() {
     setUploading(true);
     
     try {
-      let imageUrl = "";
-      
-      // Upload image if provided
-      if (imageFile) {
-        const uploadFormData = new FormData();
-        uploadFormData.append("image", imageFile);
-        
-        const uploadResponse = await fetch("/api/products/upload", {
-          method: "POST",
-          body: uploadFormData,
-        });
-        
-        if (!uploadResponse.ok) {
-          let errorMessage = "Failed to upload image";
-          try {
-            const errorData = await uploadResponse.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {
-            // If response is not JSON, try to get text
-            try {
-              const errorText = await uploadResponse.text();
-              errorMessage = errorText || errorMessage;
-            } catch (textError) {
-              errorMessage = `Upload failed with status ${uploadResponse.status}`;
-            }
-          }
-          throw new Error(errorMessage);
-        }
-        
-        const uploadData = await uploadResponse.json();
-        imageUrl = uploadData.imageUrl;
-      }
+      // Use compressed image directly (it's already a base64 data URL)
+      const imageUrl = compressedImageData || "";
       
       const slug = formData.title.toLowerCase().replace(/\s+/g, "-");
       
