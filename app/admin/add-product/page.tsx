@@ -135,8 +135,20 @@ export default function AddProduct() {
         });
         
         if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          throw new Error(errorData.error || "Failed to upload image");
+          let errorMessage = "Failed to upload image";
+          try {
+            const errorData = await uploadResponse.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // If response is not JSON, try to get text
+            try {
+              const errorText = await uploadResponse.text();
+              errorMessage = errorText || errorMessage;
+            } catch (textError) {
+              errorMessage = `Upload failed with status ${uploadResponse.status}`;
+            }
+          }
+          throw new Error(errorMessage);
         }
         
         const uploadData = await uploadResponse.json();
@@ -166,8 +178,20 @@ export default function AddProduct() {
       });
       
       if (!productResponse.ok) {
-        const errorData = await productResponse.json();
-        throw new Error(errorData.error || "Failed to create product");
+        let errorMessage = "Failed to create product";
+        try {
+          const errorData = await productResponse.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If response is not JSON, try to get text
+          try {
+            const errorText = await productResponse.text();
+            errorMessage = errorText || errorMessage;
+          } catch (textError) {
+            errorMessage = `Product creation failed with status ${productResponse.status}`;
+          }
+        }
+        throw new Error(errorMessage);
       }
       
       setSaved(true);
