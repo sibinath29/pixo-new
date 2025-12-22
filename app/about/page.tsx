@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
     <div className="space-y-6 sm:space-y-8 md:space-y-10">
