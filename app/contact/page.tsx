@@ -17,13 +17,28 @@ export default function ContactPage() {
     e.preventDefault();
     setSubmitting(true);
 
-    // In a real implementation, you would send this to your backend
-    // For now, we'll just show a success message
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
       setSubmitted(true);
-      setSubmitting(false);
       setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+    } catch (error: any) {
+      alert("Error sending message: " + (error.message || "Please try again later"));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
