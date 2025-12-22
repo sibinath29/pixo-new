@@ -37,6 +37,46 @@ export default function AboutPage() {
           From hero walls to shelf moments, Pixo pieces add a cyan note that feels intentional.
         </p>
       </div>
+
+      <div className="glass rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-6 md:p-8">
+        <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-cyan-neon mb-4">Legal &amp; Policies</p>
+        <h2 className="font-display text-xl sm:text-2xl md:text-3xl mb-4">Important Information</h2>
+        <p className="text-sm sm:text-base text-white/65 mb-6">
+          Access our policies, terms, and contact information.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <Link
+            href="/contact"
+            className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan-neon hover:text-cyan-neon hover:bg-cyan-neon/10 text-center"
+          >
+            Contact Us
+          </Link>
+          <Link
+            href="/shipping-policy"
+            className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan-neon hover:text-cyan-neon hover:bg-cyan-neon/10 text-center"
+          >
+            Shipping Policy
+          </Link>
+          <Link
+            href="/terms-and-conditions"
+            className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan-neon hover:text-cyan-neon hover:bg-cyan-neon/10 text-center"
+          >
+            Terms &amp; Conditions
+          </Link>
+          <Link
+            href="/cancellations-refunds"
+            className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan-neon hover:text-cyan-neon hover:bg-cyan-neon/10 text-center"
+          >
+            Cancellations &amp; Refunds
+          </Link>
+          <Link
+            href="/privacy-policy"
+            className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan-neon hover:text-cyan-neon hover:bg-cyan-neon/10 text-center sm:col-span-2"
+          >
+            Privacy Policy
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
