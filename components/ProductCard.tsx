@@ -28,13 +28,10 @@ export default function ProductCard({ product }: { product: Product }) {
     return () => observer.disconnect();
   }, []);
 
-  // Detect mobile/touch device
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
   return (
     <motion.div
       ref={cardRef}
-      whileHover={isMobile ? {} : { y: -6, boxShadow: "0 10px 40px rgba(8, 247, 254, 0.25)" }}
+      whileHover={{ y: -6, boxShadow: "0 10px 40px rgba(8, 247, 254, 0.25)" }}
       transition={{ duration: 0.28 }}
       className="h-full"
       style={{ 
