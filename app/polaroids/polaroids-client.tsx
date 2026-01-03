@@ -58,3 +58,5 @@ export default function PolaroidsClient({ initialPolaroids, filters }: Props) {
   );
 }
 
+
+

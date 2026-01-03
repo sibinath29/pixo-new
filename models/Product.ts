@@ -6,6 +6,7 @@ export interface IProduct extends Document {
   category: string | string[];
   type: "poster" | "polaroid";
   price: number;
+  salePrice?: number; // Optional sale price
   sizes: string[];
   description: string;
   tag?: string;
@@ -40,6 +41,10 @@ const ProductSchema = new Schema<IProduct>(
     price: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    salePrice: {
+      type: Number,
       min: 0,
     },
     sizes: {

@@ -32,7 +32,10 @@ export default function CheckoutPage() {
     },
   });
 
-  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  // Helper function to get the effective price (salePrice if available, otherwise price)
+  const getEffectivePrice = (product: any) => product.salePrice || product.price;
+
+  const totalPrice = items.reduce((sum, item) => sum + getEffectivePrice(item.product) * item.quantity, 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -349,17 +352,32 @@ export default function CheckoutPage() {
             <div className="glass rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6 space-y-4">
               <h2 className="font-display text-xl sm:text-2xl">Order Summary</h2>
               <div className="space-y-3 border-t border-white/10 pt-4">
-                {items.map((item) => (
-                  <div key={`${item.product.slug}-${item.size || "no-size"}`} className="flex justify-between text-sm">
-                    <div className="flex-1">
-                      <p className="text-white/90">{item.product.title}</p>
-                      <p className="text-white/60 text-xs">
-                        {item.quantity} × ₹{item.product.price} {item.size && `• ${item.size}`}
-                      </p>
+                {items.map((item) => {
+                  const effectivePrice = getEffectivePrice(item.product);
+                  return (
+                    <div key={`${item.product.slug}-${item.size || "no-size"}`} className="flex justify-between text-sm">
+                      <div className="flex-1">
+                        <p className="text-white/90">{item.product.title}</p>
+                        <p className="text-white/60 text-xs">
+                          {item.quantity} × ₹{effectivePrice} {item.size && `• ${item.size}`}
+                          {item.product.salePrice && (
+                            <span className="text-white/40 line-through ml-1">₹{item.product.price}</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        {item.product.salePrice ? (
+                          <>
+                            <span className="text-cyan-neon font-semibold">₹{item.product.salePrice * item.quantity}</span>
+                            <span className="text-white/50 text-xs line-through">₹{item.product.price * item.quantity}</span>
+                          </>
+                        ) : (
+                          <span className="text-cyan-neon font-semibold">₹{item.product.price * item.quantity}</span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-cyan-neon font-semibold">₹{item.product.price * item.quantity}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="border-t border-white/10 pt-4 space-y-2">
                 <div className="flex justify-between text-sm text-white/80">

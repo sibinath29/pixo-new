@@ -4,6 +4,7 @@ export type Product = {
   category: string | string[]; // Support both single and multiple categories for backward compatibility
   type: "poster" | "polaroid";
   price: number;
+  salePrice?: number; // Optional sale price
   sizes: string[];
   description: string;
   tag?: string;

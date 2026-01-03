@@ -3,8 +3,8 @@ import ProductGrid from "@/components/ProductGrid";
 import { getProductsServer, getPostersServer } from "@/lib/products-server";
 import Link from "next/link";
 
-// Revalidate every 60 seconds to keep data fresh
-export const revalidate = 60;
+// Revalidate every 10 seconds to keep data fresh (reduced for faster updates)
+export const revalidate = 10;
 
 export default async function HomePage() {
   // Fetch products on the server - this happens before the page is sent to the client

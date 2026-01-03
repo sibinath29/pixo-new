@@ -6,9 +6,10 @@ import { useAdmin } from "@/contexts/AdminContext";
 import Link from "next/link";
 import type { Product } from "@/data/products";
 
-export default function AddProduct() {
+export default function EditProduct({ params }: { params: { slug: string } }) {
   const { isAuthenticated } = useAdmin();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [productType, setProductType] = useState<"poster" | "polaroid">("poster");
   const [formData, setFormData] = useState({
     title: "",
@@ -28,8 +29,46 @@ export default function AddProduct() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/admin/login");
+      return;
     }
-  }, [isAuthenticated, router]);
+
+    // Load product data
+    const loadProduct = async () => {
+      try {
+        const response = await fetch(`/api/products/${params.slug}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch product");
+        }
+        const data = await response.json();
+        if (data.success && data.product) {
+          const product = data.product;
+          setProductType(product.type);
+          setFormData({
+            title: product.title || "",
+            categories: Array.isArray(product.category) ? product.category : [product.category],
+            price: product.price?.toString() || "",
+            salePrice: product.salePrice?.toString() || "",
+            description: product.description || "",
+            tag: product.tag || "",
+            accent: product.accent || "#08f7fe",
+            image: product.image || "",
+          });
+          if (product.image) {
+            setImagePreview(product.image);
+            setCompressedImageData(product.image);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading product:", error);
+        alert("Failed to load product. Redirecting to dashboard...");
+        router.push("/admin/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [isAuthenticated, router, params.slug]);
 
   const categories = ["Movies", "Sports", "Cars", "Anime", "Music", "More"];
   const posterSizes = ["Small", "Medium", "Large"];
@@ -126,31 +165,34 @@ export default function AddProduct() {
       // Use compressed image directly (it's already a base64 data URL)
       const imageUrl = compressedImageData || "";
       
-      const slug = formData.title.toLowerCase().replace(/\s+/g, "-");
+      // Prepare request body
+      const requestBody = {
+        title: formData.title,
+        category: formData.categories.length === 1 ? formData.categories[0] : formData.categories,
+        type: productType,
+        price: formData.price,
+        salePrice: formData.salePrice.trim() === "" ? null : (formData.salePrice ? parseFloat(formData.salePrice) : null),
+        sizes: productType === "poster" ? posterSizes : polaroidSizes,
+        description: formData.description,
+        tag: formData.tag || formData.categories[0],
+        accent: formData.accent,
+        image: imageUrl,
+      };
       
-      // Create product via API
-      const productResponse = await fetch("/api/products", {
-        method: "POST",
+      console.log("[Edit Product] Sending update request:", requestBody);
+      console.log("[Edit Product] salePrice value:", requestBody.salePrice, "Type:", typeof requestBody.salePrice);
+      
+      // Update product via API
+      const productResponse = await fetch(`/api/products/${params.slug}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-          body: JSON.stringify({
-          slug,
-          title: formData.title,
-          category: formData.categories.length === 1 ? formData.categories[0] : formData.categories,
-          type: productType,
-          price: formData.price,
-          salePrice: formData.salePrice.trim() === "" ? null : (formData.salePrice ? parseFloat(formData.salePrice) : null),
-          sizes: productType === "poster" ? posterSizes : polaroidSizes,
-          description: formData.description,
-          tag: formData.tag || formData.categories[0],
-          accent: formData.accent,
-          image: imageUrl,
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       if (!productResponse.ok) {
-        let errorMessage = "Failed to create product";
+        let errorMessage = "Failed to update product";
         try {
           const errorData = await productResponse.json();
           errorMessage = errorData.error || errorMessage;
@@ -160,7 +202,7 @@ export default function AddProduct() {
             const errorText = await productResponse.text();
             errorMessage = errorText || errorMessage;
           } catch (textError) {
-            errorMessage = `Product creation failed with status ${productResponse.status}`;
+            errorMessage = `Product update failed with status ${productResponse.status}`;
           }
         }
         throw new Error(errorMessage);
@@ -176,20 +218,26 @@ export default function AddProduct() {
         router.refresh(); // Force refresh to get latest data
       }, 1500);
     } catch (error: any) {
-      alert("Error saving product: " + error.message);
-      console.error("Error saving product:", error);
+      alert("Error updating product: " + error.message);
+      console.error("Error updating product:", error);
       setUploading(false);
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-white/60">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl sm:text-4xl text-cyan-neon">Add New Product</h1>
-          <p className="text-white/60 text-sm mt-1">Create a new poster or polaroid</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-cyan-neon">Edit Product</h1>
+          <p className="text-white/60 text-sm mt-1">Update poster or polaroid details</p>
         </div>
         <Link
           href="/admin/dashboard"
@@ -384,7 +432,7 @@ export default function AddProduct() {
 
           {saved && (
             <div className="rounded-lg border border-cyan-neon/50 bg-cyan-neon/10 px-4 py-3 text-sm text-cyan-neon">
-              Product added successfully! Redirecting...
+              Product updated successfully! Redirecting...
             </div>
           )}
 
@@ -394,7 +442,7 @@ export default function AddProduct() {
               disabled={saved || uploading}
               className="cta-btn flex-1 text-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {uploading ? "Uploading..." : saved ? "Saved!" : "Add Product"}
+              {uploading ? "Updating..." : saved ? "Updated!" : "Update Product"}
             </button>
             <Link
               href="/admin/dashboard"

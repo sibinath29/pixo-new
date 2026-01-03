@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
           productType: item.product.type,
           size: item.size || "",
           quantity: item.quantity,
-          price: item.product.price,
+          price: item.product.salePrice || item.product.price, // Use salePrice if available
         })),
         amount: amountInPaise,
         currency: "INR",

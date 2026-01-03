@@ -118,10 +118,21 @@ export default function PosterSlideshow({ initialPosters = [] }: Props) {
                 <p className="text-xs sm:text-sm text-white/60 max-w-xs">
                   {currentPoster.description}
                 </p>
-                <div className="pt-1 sm:pt-2">
-                  <span className="text-base sm:text-lg font-bold text-cyan-neon">
-                    ₹{currentPoster.price}
-                  </span>
+                <div className="pt-1 sm:pt-2 flex items-center gap-2 sm:gap-3 justify-center">
+                  {currentPoster.salePrice && currentPoster.salePrice > 0 ? (
+                    <>
+                      <span className="text-base sm:text-lg font-bold text-cyan-neon">
+                        ₹{currentPoster.salePrice}
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-white/50 line-through">
+                        ₹{currentPoster.price}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-base sm:text-lg font-bold text-cyan-neon">
+                      ₹{currentPoster.price}
+                    </span>
+                  )}
                 </div>
               </motion.div>
             </div>

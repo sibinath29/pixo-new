@@ -82,7 +82,14 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
           <div>
             <p className="text-xs sm:text-sm text-white/60">Starting at</p>
-            <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{product.price}</p>
+            {product.salePrice && product.salePrice > 0 ? (
+              <div className="flex items-center gap-3">
+                <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{product.salePrice}</p>
+                <p className="text-xl sm:text-2xl font-display text-white/50 line-through">₹{product.price}</p>
+              </div>
+            ) : (
+              <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{product.price}</p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-white/60">
             {Array.isArray(product.category) ? (
@@ -146,4 +153,6 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
     </div>
   );
 }
+
+
 

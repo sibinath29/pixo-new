@@ -20,13 +20,20 @@ export async function GET(request: NextRequest) {
       .lean()
       .select("-__v"); // Exclude version key for smaller response
 
-    // Add cache headers for client-side caching
+    // Ensure salePrice is properly included and typed
+    const typedProducts = products.map((p: any) => ({
+      ...p,
+      salePrice: p.salePrice != null ? Number(p.salePrice) : undefined,
+      price: Number(p.price),
+    }));
+
+    // Add cache headers for client-side caching (reduced for faster updates)
     return NextResponse.json(
-      { success: true, products },
+      { success: true, products: typedProducts },
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+          "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
         },
       }
     );
@@ -51,6 +58,7 @@ export async function POST(request: NextRequest) {
       category,
       type,
       price,
+      salePrice,
       sizes,
       description,
       tag,
@@ -75,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const product = new Product({
+    const productData: any = {
       slug,
       title,
       category,
@@ -86,9 +94,24 @@ export async function POST(request: NextRequest) {
       tag: tag || "",
       accent: accent || "#08f7fe",
       image: image || "",
-    });
+    };
+
+    // Handle salePrice: only add if provided and valid
+    if (salePrice !== undefined && salePrice !== null && salePrice !== "") {
+      const parsedSalePrice = typeof salePrice === 'number' ? salePrice : parseFloat(String(salePrice));
+      if (!isNaN(parsedSalePrice) && parsedSalePrice > 0) {
+        productData.salePrice = parsedSalePrice;
+        console.log(`[POST /api/products] Setting salePrice to:`, parsedSalePrice);
+      }
+    }
+
+    console.log(`[POST /api/products] Product data:`, JSON.stringify(productData, null, 2));
+
+    const product = new Product(productData);
 
     await product.save();
+    
+    console.log(`[POST /api/products] Saved product salePrice:`, product.salePrice);
 
     return NextResponse.json(
       { success: true, product },

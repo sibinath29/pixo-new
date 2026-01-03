@@ -11,10 +11,14 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"posters" | "polaroids">("posters");
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const loadProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      setLoading(true);
+      const response = await fetch("/api/products", {
+        cache: "no-store", // Always fetch fresh data in admin
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch products");
       }
@@ -23,6 +27,8 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error loading products:", error);
       setProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,7 +38,7 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Load products immediately
+    // Load products once on mount
     loadProducts();
 
     // Listen for focus events (when navigating back to this page)
@@ -40,20 +46,19 @@ export default function AdminDashboard() {
       loadProducts();
     };
     
+    // Listen for product update events
+    const handleProductsUpdated = () => {
+      loadProducts();
+    };
+    
     window.addEventListener("focus", handleFocus);
-
-    // Reload when activeTab changes
-    loadProducts();
+    window.addEventListener("productsUpdated", handleProductsUpdated);
 
     return () => {
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("productsUpdated", handleProductsUpdated);
     };
   }, [isAuthenticated, router]);
-
-  // Reload products when activeTab changes
-  useEffect(() => {
-    loadProducts();
-  }, [activeTab]);
 
   const deleteProduct = async (slug: string) => {
     if (confirm("Are you sure you want to delete this product?")) {
@@ -174,7 +179,11 @@ export default function AdminDashboard() {
       </div>
 
       <div className="glass rounded-2xl border border-white/10 p-6">
-        {products.filter((p) => p.type === activeTab.slice(0, -1)).length === 0 ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-white/60 text-sm">Loading products...</p>
+          </div>
+        ) : products.filter((p) => p.type === activeTab.slice(0, -1)).length === 0 ? (
           <p className="text-white/60 text-sm">
             No {activeTab} yet. Use the &quot;Add Product&quot; button to create new items.
           </p>
@@ -199,7 +208,15 @@ export default function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-display text-lg text-white truncate">{product.title}</h3>
                     <p className="text-sm text-white/60">
-                      {Array.isArray(product.category) ? product.category.join(", ") : product.category} • ₹{product.price}
+                      {Array.isArray(product.category) ? product.category.join(", ") : product.category} •{" "}
+                      {product.salePrice ? (
+                        <>
+                          <span className="text-cyan-neon">₹{product.salePrice}</span>
+                          <span className="text-white/40 line-through ml-1">₹{product.price}</span>
+                        </>
+                      ) : (
+                        <span>₹{product.price}</span>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -208,6 +225,12 @@ export default function AdminDashboard() {
                       className="text-xs text-cyan-neon hover:underline"
                     >
                       View
+                    </Link>
+                    <Link
+                      href={`/admin/edit-product/${product.slug}`}
+                      className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors hover:underline"
+                    >
+                      Edit
                     </Link>
                     <button
                       onClick={() => deleteProduct(product.slug)}

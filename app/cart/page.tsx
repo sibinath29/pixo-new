@@ -8,7 +8,10 @@ export default function CartPage() {
   const { items, removeFromCart, updateQuantity, getTotalCount, clearCart } = useCart();
   const cartCount = getTotalCount();
 
-  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  // Helper function to get the effective price (salePrice if available, otherwise price)
+  const getEffectivePrice = (product: any) => product.salePrice || product.price;
+
+  const totalPrice = items.reduce((sum, item) => sum + getEffectivePrice(item.product) * item.quantity, 0);
 
   if (items.length === 0) {
     return (
@@ -95,9 +98,22 @@ export default function CartPage() {
                       </button>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-base sm:text-lg font-semibold text-cyan-neon">
-                        ₹{item.product.price * item.quantity}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        {item.product.salePrice ? (
+                          <>
+                            <span className="text-base sm:text-lg font-semibold text-cyan-neon">
+                              ₹{item.product.salePrice * item.quantity}
+                            </span>
+                            <span className="text-xs sm:text-sm text-white/50 line-through">
+                              ₹{item.product.price * item.quantity}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-base sm:text-lg font-semibold text-cyan-neon">
+                            ₹{item.product.price * item.quantity}
+                          </span>
+                        )}
+                      </div>
                       <button
                         onClick={() => removeFromCart(item.product.slug, item.size)}
                         className="text-red-400 hover:text-red-300 transition-colors text-sm"

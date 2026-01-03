@@ -84,7 +84,16 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="flex flex-1 flex-col gap-1.5 sm:gap-2 p-2 sm:p-3">
           <div className="flex items-center justify-between gap-1.5">
             <h3 className="font-display text-sm sm:text-base text-white line-clamp-1">{product.title}</h3>
-            <span className="text-cyan-neon font-semibold text-xs sm:text-sm flex-shrink-0">₹{product.price}</span>
+            <div className="flex flex-col items-end flex-shrink-0">
+              {product.salePrice && product.salePrice > 0 ? (
+                <>
+                  <span className="text-cyan-neon font-semibold text-xs sm:text-sm">₹{product.salePrice}</span>
+                  <span className="text-white/50 font-semibold text-[10px] sm:text-xs line-through">₹{product.price}</span>
+                </>
+              ) : (
+                <span className="text-cyan-neon font-semibold text-xs sm:text-sm">₹{product.price}</span>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-1">
             {Array.isArray(product.category) ? (

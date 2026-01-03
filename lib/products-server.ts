@@ -12,7 +12,15 @@ export async function getProductsServer(): Promise<ProductType[]> {
       .sort({ createdAt: -1 })
       .lean()
       .select("-__v");
-    return products as ProductType[];
+    
+    // Ensure salePrice is included and properly typed
+    const typedProducts = products.map((p: any) => ({
+      ...p,
+      salePrice: p.salePrice != null ? Number(p.salePrice) : undefined,
+      price: Number(p.price),
+    })) as ProductType[];
+    
+    return typedProducts;
   } catch (error) {
     console.error("Error fetching products on server:", error);
     return [];
@@ -41,4 +49,6 @@ export async function getProductBySlugServer(slug: string): Promise<ProductType 
     return null;
   }
 }
+
+
 
