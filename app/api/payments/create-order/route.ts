@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import connectDB from "@/lib/db";
 import Order from "@/models/Order";
+import { getEffectivePriceForSize } from "@/utils/pricing";
 
 // Generate unique order ID
 function generateOrderId(): string {
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
           productType: item.product.type,
           size: item.size || "",
           quantity: item.quantity,
-          price: item.product.salePrice || item.product.price, // Use salePrice if available
+          price: getEffectivePriceForSize(item.product, item.size), // Use size-specific price
         })),
         amount: amountInPaise,
         currency: "INR",

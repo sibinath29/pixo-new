@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
+import { getEffectivePriceForSize, getPriceForSize, getSalePriceForSize } from "@/utils/pricing";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, getTotalCount, clearCart } = useCart();
   const cartCount = getTotalCount();
 
-  // Helper function to get the effective price (salePrice if available, otherwise price)
-  const getEffectivePrice = (product: any) => product.salePrice || product.price;
-
-  const totalPrice = items.reduce((sum, item) => sum + getEffectivePrice(item.product) * item.quantity, 0);
+  const totalPrice = items.reduce((sum, item) => sum + getEffectivePriceForSize(item.product, item.size) * item.quantity, 0);
 
   if (items.length === 0) {
     return (
@@ -99,20 +97,33 @@ export default function CartPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col items-end">
-                        {item.product.salePrice ? (
-                          <>
+                        {(() => {
+                          // Debug: Log product prices
+                          console.log(`Cart Item - ${item.product.title} (${item.size}):`, {
+                            price: item.product.price,
+                            priceA3: item.product.priceA3,
+                            priceA4: item.product.priceA4,
+                            size: item.size,
+                            calculatedPrice: getPriceForSize(item.product, item.size),
+                          });
+                          
+                          const itemPrice = getPriceForSize(item.product, item.size);
+                          const itemSalePrice = getSalePriceForSize(item.product, item.size);
+                          return itemSalePrice && itemSalePrice > 0 ? (
+                            <>
+                              <span className="text-base sm:text-lg font-semibold text-cyan-neon">
+                                ₹{itemSalePrice * item.quantity}
+                              </span>
+                              <span className="text-xs sm:text-sm text-white/50 line-through">
+                                ₹{itemPrice * item.quantity}
+                              </span>
+                            </>
+                          ) : (
                             <span className="text-base sm:text-lg font-semibold text-cyan-neon">
-                              ₹{item.product.salePrice * item.quantity}
+                              ₹{itemPrice * item.quantity}
                             </span>
-                            <span className="text-xs sm:text-sm text-white/50 line-through">
-                              ₹{item.product.price * item.quantity}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-base sm:text-lg font-semibold text-cyan-neon">
-                            ₹{item.product.price * item.quantity}
-                          </span>
-                        )}
+                          );
+                        })()}
                       </div>
                       <button
                         onClick={() => removeFromCart(item.product.slug, item.size)}

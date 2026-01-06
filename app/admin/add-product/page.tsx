@@ -13,8 +13,8 @@ export default function AddProduct() {
   const [formData, setFormData] = useState({
     title: "",
     categories: [] as string[],
-    price: "",
-    salePrice: "",
+    priceA3: "",
+    priceA4: "",
     description: "",
     tag: "",
     accent: "#08f7fe",
@@ -126,21 +126,23 @@ export default function AddProduct() {
       // Use compressed image directly (it's already a base64 data URL)
       const imageUrl = compressedImageData || "";
       
-      const slug = formData.title.toLowerCase().replace(/\s+/g, "-");
+      const baseSlug = formData.title.toLowerCase().replace(/\s+/g, "-");
+      const slugA3 = `${baseSlug}-a3`;
+      const slugA4 = `${baseSlug}-a4`;
       
-      // Create product via API
-      const productResponse = await fetch("/api/products", {
+      // Create A3 product
+      const productA3Response = await fetch("/api/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-          body: JSON.stringify({
-          slug,
+        body: JSON.stringify({
+          slug: slugA3,
           title: formData.title,
           category: formData.categories.length === 1 ? formData.categories[0] : formData.categories,
           type: productType,
-          price: formData.price,
-          salePrice: formData.salePrice.trim() === "" ? null : (formData.salePrice ? parseFloat(formData.salePrice) : null),
+          size: "A3",
+          price: parseFloat(formData.priceA3),
           sizes: productType === "poster" ? posterSizes : polaroidSizes,
           description: formData.description,
           tag: formData.tag || formData.categories[0],
@@ -149,22 +151,50 @@ export default function AddProduct() {
         }),
       });
       
-      if (!productResponse.ok) {
-        let errorMessage = "Failed to create product";
+      if (!productA3Response.ok) {
+        let errorMessage = "Failed to create A3 product";
         try {
-          const errorData = await productResponse.json();
+          const errorData = await productA3Response.json();
           errorMessage = errorData.error || errorMessage;
         } catch (e) {
-          // If response is not JSON, try to get text
-          try {
-            const errorText = await productResponse.text();
-            errorMessage = errorText || errorMessage;
-          } catch (textError) {
-            errorMessage = `Product creation failed with status ${productResponse.status}`;
-          }
+          errorMessage = `A3 product creation failed with status ${productA3Response.status}`;
         }
         throw new Error(errorMessage);
       }
+      
+      // Create A4 product
+      const productA4Response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          slug: slugA4,
+          title: formData.title,
+          category: formData.categories.length === 1 ? formData.categories[0] : formData.categories,
+          type: productType,
+          size: "A4",
+          price: parseFloat(formData.priceA4),
+          sizes: productType === "poster" ? posterSizes : polaroidSizes,
+          description: formData.description,
+          tag: formData.tag || formData.categories[0],
+          accent: formData.accent,
+          image: imageUrl,
+        }),
+      });
+      
+      if (!productA4Response.ok) {
+        let errorMessage = "Failed to create A4 product";
+        try {
+          const errorData = await productA4Response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `A4 product creation failed with status ${productA4Response.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      console.log("[Add Product] Both products created successfully");
       
       setSaved(true);
       
@@ -274,42 +304,40 @@ export default function AddProduct() {
             )}
           </div>
 
-          {/* Price */}
+          {/* A3 Price */}
           <div>
-            <label htmlFor="price" className="block text-sm font-semibold text-white/80 mb-2">
-              Price (₹) *
+            <label htmlFor="priceA3" className="block text-sm font-semibold text-white/80 mb-2">
+              A3 Price (₹) *
             </label>
             <input
-              id="price"
+              id="priceA3"
               type="number"
               step="0.01"
               min="0"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              value={formData.priceA3}
+              onChange={(e) => setFormData({ ...formData, priceA3: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-cyan-neon transition-colors"
-              placeholder="e.g., 38"
+              placeholder="e.g., 150"
               required
             />
           </div>
 
-          {/* Sale Price */}
+          {/* A4 Price */}
           <div>
-            <label htmlFor="salePrice" className="block text-sm font-semibold text-white/80 mb-2">
-              Sale Price (₹) <span className="text-white/50 text-xs">(Optional)</span>
+            <label htmlFor="priceA4" className="block text-sm font-semibold text-white/80 mb-2">
+              A4 Price (₹) *
             </label>
             <input
-              id="salePrice"
+              id="priceA4"
               type="number"
               step="0.01"
               min="0"
-              value={formData.salePrice}
-              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+              value={formData.priceA4}
+              onChange={(e) => setFormData({ ...formData, priceA4: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-cyan-neon transition-colors"
-              placeholder="e.g., 28 (leave empty if no sale)"
+              placeholder="e.g., 100"
+              required
             />
-            {formData.salePrice && parseFloat(formData.salePrice) >= parseFloat(formData.price || "0") && (
-              <p className="mt-1 text-xs text-red-400">Sale price should be less than original price</p>
-            )}
           </div>
 
           {/* Description */}

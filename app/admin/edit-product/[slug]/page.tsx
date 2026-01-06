@@ -15,12 +15,12 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
     title: "",
     categories: [] as string[],
     price: "",
-    salePrice: "",
     description: "",
     tag: "",
     accent: "#08f7fe",
     image: "",
   });
+  const [productSize, setProductSize] = useState<"A3" | "A4">("A4");
   const [saved, setSaved] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [compressedImageData, setCompressedImageData] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
     // Load product data
     const loadProduct = async () => {
       try {
-        const response = await fetch(`/api/products/${params.slug}`);
+        const response = await fetch(`/api/products/${params.slug}?admin=true`);
         if (!response.ok) {
           throw new Error("Failed to fetch product");
         }
@@ -43,15 +43,25 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
         if (data.success && data.product) {
           const product = data.product;
           setProductType(product.type);
+          setProductSize(product.size || "A4");
+          
+          // Use the product's price (each product now has its own size and price)
+          const actualPrice = product.price != null && product.price > 0 ? product.price : "";
+          
           setFormData({
             title: product.title || "",
             categories: Array.isArray(product.category) ? product.category : [product.category],
-            price: product.price?.toString() || "",
-            salePrice: product.salePrice?.toString() || "",
+            price: actualPrice.toString(),
             description: product.description || "",
             tag: product.tag || "",
             accent: product.accent || "#08f7fe",
             image: product.image || "",
+          });
+          
+          console.log("Loaded product from API:", {
+            title: product.title,
+            size: product.size,
+            price: product.price,
           });
           if (product.image) {
             setImagePreview(product.image);
@@ -165,13 +175,22 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
       // Use compressed image directly (it's already a base64 data URL)
       const imageUrl = compressedImageData || "";
       
+      // Validate price before sending
+      const priceValue = parseFloat(formData.price);
+      
+      if (isNaN(priceValue) || priceValue <= 0) {
+        alert("Price must be a valid positive number");
+        setUploading(false);
+        return;
+      }
+      
       // Prepare request body
       const requestBody = {
         title: formData.title,
         category: formData.categories.length === 1 ? formData.categories[0] : formData.categories,
         type: productType,
-        price: formData.price,
-        salePrice: formData.salePrice.trim() === "" ? null : (formData.salePrice ? parseFloat(formData.salePrice) : null),
+        size: productSize,
+        price: priceValue,
         sizes: productType === "poster" ? posterSizes : polaroidSizes,
         description: formData.description,
         tag: formData.tag || formData.categories[0],
@@ -180,7 +199,6 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
       };
       
       console.log("[Edit Product] Sending update request:", requestBody);
-      console.log("[Edit Product] salePrice value:", requestBody.salePrice, "Type:", typeof requestBody.salePrice);
       
       // Update product via API
       const productResponse = await fetch(`/api/products/${params.slug}`, {
@@ -322,6 +340,19 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
             )}
           </div>
 
+          {/* Product Size Display (Read-only) */}
+          <div>
+            <label className="block text-sm font-semibold text-white/80 mb-2">
+              Product Size
+            </label>
+            <div className="rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-white">
+              {productSize}
+            </div>
+            <p className="mt-1 text-xs text-white/50">
+              This product is for {productSize} size. To edit the {productSize === "A3" ? "A4" : "A3"} variant, edit the corresponding product.
+            </p>
+          </div>
+
           {/* Price */}
           <div>
             <label htmlFor="price" className="block text-sm font-semibold text-white/80 mb-2">
@@ -335,29 +366,9 @@ export default function EditProduct({ params }: { params: { slug: string } }) {
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-cyan-neon transition-colors"
-              placeholder="e.g., 38"
+              placeholder="e.g., 100"
               required
             />
-          </div>
-
-          {/* Sale Price */}
-          <div>
-            <label htmlFor="salePrice" className="block text-sm font-semibold text-white/80 mb-2">
-              Sale Price (₹) <span className="text-white/50 text-xs">(Optional)</span>
-            </label>
-            <input
-              id="salePrice"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.salePrice}
-              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-              className="w-full rounded-lg border border-white/10 bg-black/50 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-cyan-neon transition-colors"
-              placeholder="e.g., 28 (leave empty if no sale)"
-            />
-            {formData.salePrice && parseFloat(formData.salePrice) >= parseFloat(formData.price || "0") && (
-              <p className="mt-1 text-xs text-red-400">Sale price should be less than original price</p>
-            )}
           </div>
 
           {/* Description */}

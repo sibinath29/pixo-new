@@ -17,7 +17,7 @@ export default function PostersClient({ initialPosters, filters }: Props) {
   useEffect(() => {
     // Listen for product updates and refresh
     const handleUpdate = () => {
-      fetch("/api/products?type=poster")
+      fetch("/api/products?type=poster&size=A4")
         .then((res) => res.json())
         .then((data) => {
           if (data.success && Array.isArray(data.products)) {
@@ -57,6 +57,8 @@ export default function PostersClient({ initialPosters, filters }: Props) {
     </div>
   );
 }
+
+
 
 
 

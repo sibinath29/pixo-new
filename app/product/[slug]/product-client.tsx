@@ -2,7 +2,7 @@
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/contexts/CartContext";
 import type { Product } from "@/data/products";
 
@@ -12,16 +12,90 @@ type Props = {
 };
 
 export default function ProductDetailClient({ initialProduct, slug }: Props) {
-  const [product, setProduct] = useState<Product | null>(initialProduct);
   const { addToCart } = useCart();
   const availableSizes = ["A3", "A4"];
-  const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0]);
+  
+  // Extract base slug (remove -a3 or -a4 suffix) and determine initial size
+  // If slug doesn't end with -a3 or -a4, treat it as base slug and default to A4
+  const baseSlug = slug.replace(/-a[34]$/, "") || slug;
+  const initialSize = slug.endsWith("-a3") ? "A3" : "A4";
+  
+  const [selectedSize, setSelectedSize] = useState<string>(initialSize);
+  const [product, setProduct] = useState<Product | null>(initialProduct);
   const [added, setAdded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const isInitialMount = useRef(true);
+  const fetchingRef = useRef<string | null>(null);
+  const currentProductSizeRef = useRef<string | null>(initialProduct?.size || null);
+
+  // Update ref when product changes
+  useEffect(() => {
+    if (product?.size) {
+      currentProductSizeRef.current = product.size;
+    }
+  }, [product]);
+
+  // Fetch product when size changes (but skip on initial mount)
+  useEffect(() => {
+    // Skip fetching on initial mount since we already have initialProduct
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Skip if we're already fetching this size
+    if (fetchingRef.current === selectedSize) {
+      return;
+    }
+
+    // Skip if the current product already matches the selected size
+    if (currentProductSizeRef.current === selectedSize) {
+      return;
+    }
+
+    const productSlug = `${baseSlug}-${selectedSize.toLowerCase()}`;
+    fetchingRef.current = selectedSize;
+    setIsLoading(true);
+    
+    fetch(`/api/products/${productSlug}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setIsLoading(false);
+        fetchingRef.current = null;
+        
+        if (data.success && data.product) {
+          // Verify the fetched product matches the selected size
+          if (data.product.size === selectedSize) {
+            setProduct(data.product);
+            currentProductSizeRef.current = data.product.size;
+            // Update URL without page reload
+            window.history.replaceState(null, "", `/product/${productSlug}`);
+          } else {
+            console.error(`Product size mismatch: expected ${selectedSize}, got ${data.product.size}`);
+            alert(`Product size mismatch. Expected ${selectedSize} but got ${data.product.size}.`);
+          }
+        } else {
+          alert(`Product ${productSlug} not found. Please make sure both A3 and A4 variants exist.`);
+        }
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        fetchingRef.current = null;
+        console.error("Error fetching product:", error);
+        alert(`Error loading product: ${error.message}. Please try again.`);
+      });
+  }, [selectedSize, baseSlug]);
 
   useEffect(() => {
     // Listen for product updates and refresh
     const handleUpdate = () => {
-      fetch(`/api/products/${slug}`)
+      const productSlug = `${baseSlug}-${selectedSize.toLowerCase()}`;
+      fetch(`/api/products/${productSlug}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.product) {
@@ -35,12 +109,28 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
     return () => {
       window.removeEventListener("productsUpdated", handleUpdate);
     };
-  }, [slug]);
+  }, [baseSlug, selectedSize]);
 
+
+  if (!product && !isLoading) return notFound();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-cyan-neon text-lg">Loading {selectedSize} product...</div>
+      </div>
+    );
+  }
+  
   if (!product) return notFound();
 
+  // Use the product's price directly since each product now has its own size
+  const currentPrice = product.price || 0;
+  const currentSalePrice = product.salePrice;
+
   const handleAddToCart = () => {
-    addToCart(product, selectedSize);
+    // Product already has the correct size, so we don't need to pass size separately
+    addToCart(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -81,14 +171,14 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
           <div>
-            <p className="text-xs sm:text-sm text-white/60">Starting at</p>
-            {product.salePrice && product.salePrice > 0 ? (
+            <p className="text-xs sm:text-sm text-white/60">Price ({selectedSize})</p>
+            {currentSalePrice && currentSalePrice > 0 ? (
               <div className="flex items-center gap-3">
-                <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{product.salePrice}</p>
-                <p className="text-xl sm:text-2xl font-display text-white/50 line-through">₹{product.price}</p>
+                <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{currentSalePrice}</p>
+                <p className="text-xl sm:text-2xl font-display text-white/50 line-through">₹{currentPrice}</p>
               </div>
             ) : (
-              <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{product.price}</p>
+              <p className="text-2xl sm:text-3xl font-display text-cyan-neon">₹{currentPrice}</p>
             )}
           </div>
           <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-white/60">

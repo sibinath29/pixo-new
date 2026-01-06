@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import Script from "next/script";
+import { getEffectivePriceForSize, getPriceForSize, getSalePriceForSize } from "@/utils/pricing";
 
 declare global {
   interface Window {
@@ -32,10 +33,7 @@ export default function CheckoutPage() {
     },
   });
 
-  // Helper function to get the effective price (salePrice if available, otherwise price)
-  const getEffectivePrice = (product: any) => product.salePrice || product.price;
-
-  const totalPrice = items.reduce((sum, item) => sum + getEffectivePrice(item.product) * item.quantity, 0);
+  const totalPrice = items.reduce((sum, item) => sum + getEffectivePriceForSize(item.product, item.size) * item.quantity, 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -353,26 +351,28 @@ export default function CheckoutPage() {
               <h2 className="font-display text-xl sm:text-2xl">Order Summary</h2>
               <div className="space-y-3 border-t border-white/10 pt-4">
                 {items.map((item) => {
-                  const effectivePrice = getEffectivePrice(item.product);
+                  const itemPrice = getPriceForSize(item.product, item.size);
+                  const itemSalePrice = getSalePriceForSize(item.product, item.size);
+                  const effectivePrice = getEffectivePriceForSize(item.product, item.size);
                   return (
                     <div key={`${item.product.slug}-${item.size || "no-size"}`} className="flex justify-between text-sm">
                       <div className="flex-1">
                         <p className="text-white/90">{item.product.title}</p>
                         <p className="text-white/60 text-xs">
                           {item.quantity} × ₹{effectivePrice} {item.size && `• ${item.size}`}
-                          {item.product.salePrice && (
-                            <span className="text-white/40 line-through ml-1">₹{item.product.price}</span>
+                          {itemSalePrice && itemSalePrice > 0 && (
+                            <span className="text-white/40 line-through ml-1">₹{itemPrice}</span>
                           )}
                         </p>
                       </div>
                       <div className="flex flex-col items-end">
-                        {item.product.salePrice ? (
+                        {itemSalePrice && itemSalePrice > 0 ? (
                           <>
-                            <span className="text-cyan-neon font-semibold">₹{item.product.salePrice * item.quantity}</span>
-                            <span className="text-white/50 text-xs line-through">₹{item.product.price * item.quantity}</span>
+                            <span className="text-cyan-neon font-semibold">₹{itemSalePrice * item.quantity}</span>
+                            <span className="text-white/50 text-xs line-through">₹{itemPrice * item.quantity}</span>
                           </>
                         ) : (
-                          <span className="text-cyan-neon font-semibold">₹{item.product.price * item.quantity}</span>
+                          <span className="text-cyan-neon font-semibold">₹{itemPrice * item.quantity}</span>
                         )}
                       </div>
                     </div>

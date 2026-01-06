@@ -8,17 +8,26 @@ import type { Product as ProductType } from "@/data/products";
 export async function getProductsServer(): Promise<ProductType[]> {
   try {
     await connectDB();
-    const products = await Product.find({})
+    // By default, only fetch A4 products
+    const products = await Product.find({ size: "A4" })
       .sort({ createdAt: -1 })
       .lean()
       .select("-__v");
     
-    // Ensure salePrice is included and properly typed
-    const typedProducts = products.map((p: any) => ({
-      ...p,
-      salePrice: p.salePrice != null ? Number(p.salePrice) : undefined,
-      price: Number(p.price),
-    })) as ProductType[];
+    // Ensure all price fields are included and properly typed
+    // Return ACTUAL database values - no fallback
+    const typedProducts = products.map((p: any) => {
+      return {
+        ...p,
+        size: p.size || undefined,
+        salePrice: p.salePrice != null ? Number(p.salePrice) : undefined,
+        price: p.price != null ? Number(p.price) : Number(p.priceA4 || 0), // For backward compatibility only
+        priceA3: p.priceA3 != null ? Number(p.priceA3) : null, // Return actual value from DB
+        priceA4: p.priceA4 != null ? Number(p.priceA4) : null, // Return actual value from DB
+        salePriceA3: p.salePriceA3 != null ? Number(p.salePriceA3) : undefined,
+        salePriceA4: p.salePriceA4 != null ? Number(p.salePriceA4) : undefined,
+      } as ProductType;
+    });
     
     return typedProducts;
   } catch (error) {
@@ -29,12 +38,14 @@ export async function getProductsServer(): Promise<ProductType[]> {
 
 export async function getPostersServer(): Promise<ProductType[]> {
   const products = await getProductsServer();
-  return products.filter((p) => p.type === "poster");
+  // Filter by type and show only A4 products by default
+  return products.filter((p) => p.type === "poster" && (p.size === "A4" || !p.size));
 }
 
 export async function getPolaroidsServer(): Promise<ProductType[]> {
   const products = await getProductsServer();
-  return products.filter((p) => p.type === "polaroid");
+  // Filter by type and show only A4 products by default
+  return products.filter((p) => p.type === "polaroid" && (p.size === "A4" || !p.size));
 }
 
 export async function getProductBySlugServer(slug: string): Promise<ProductType | null> {
@@ -43,12 +54,30 @@ export async function getProductBySlugServer(slug: string): Promise<ProductType 
     const product = await Product.findOne({ slug } as any)
       .lean()
       .select("-__v");
-    return product as ProductType | null;
+    
+    if (!product) {
+      return null;
+    }
+    
+    // Ensure all price fields are included and properly typed
+    // Return ACTUAL database values - no fallback
+    const dbPriceA3 = (product as any).priceA3;
+    const dbPriceA4 = (product as any).priceA4;
+    
+    const typedProduct = {
+      ...product,
+      size: (product as any).size || undefined,
+      salePrice: (product as any).salePrice != null ? Number((product as any).salePrice) : undefined,
+      price: (product as any).price != null ? Number((product as any).price) : Number(dbPriceA4 || 0), // For backward compatibility only
+      priceA3: dbPriceA3 != null ? Number(dbPriceA3) : null, // Return actual value from DB
+      priceA4: dbPriceA4 != null ? Number(dbPriceA4) : null, // Return actual value from DB
+      salePriceA3: (product as any).salePriceA3 != null ? Number((product as any).salePriceA3) : undefined,
+      salePriceA4: (product as any).salePriceA4 != null ? Number((product as any).salePriceA4) : undefined,
+    } as ProductType;
+    
+    return typedProduct;
   } catch (error) {
     console.error("Error fetching product by slug on server:", error);
     return null;
   }
 }
-
-
-
