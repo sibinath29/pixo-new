@@ -2,7 +2,7 @@
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import type { Product } from "@/data/products";
 
@@ -16,9 +16,9 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
   const availableSizes = ["A3", "A4"];
   
   // Extract base slug (remove -a3 or -a4 suffix) and determine initial size
-  // If slug doesn't end with -a3 or -a4, treat it as base slug and default to A4
-  const baseSlug = slug.replace(/-a[34]$/, "") || slug;
-  const initialSize = slug.endsWith("-a3") ? "A3" : "A4";
+  // Memoize these to prevent dependency array changes
+  const baseSlug = useMemo(() => slug.replace(/-a[34]$/, "") || slug, [slug]);
+  const initialSize = useMemo(() => slug.endsWith("-a3") ? "A3" : "A4", [slug]);
   
   const [selectedSize, setSelectedSize] = useState<string>(initialSize);
   const [product, setProduct] = useState<Product | null>(initialProduct);
@@ -26,33 +26,37 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const isInitialMount = useRef(true);
   const fetchingRef = useRef<string | null>(null);
-  const currentProductSizeRef = useRef<string | null>(initialProduct?.size || null);
-
-  // Update ref when product changes
-  useEffect(() => {
-    if (product?.size) {
-      currentProductSizeRef.current = product.size;
-    }
-  }, [product]);
+  const previousSizeRef = useRef<string | null>(null);
 
   // Fetch product when size changes (but skip on initial mount)
   useEffect(() => {
     // Skip fetching on initial mount since we already have initialProduct
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      previousSizeRef.current = selectedSize;
+      return;
+    }
+
+    // Skip if size hasn't actually changed (user clicked same button)
+    if (previousSizeRef.current === selectedSize) {
+      console.log("Skipping fetch - size unchanged:", selectedSize);
       return;
     }
 
     // Skip if we're already fetching this size
     if (fetchingRef.current === selectedSize) {
+      console.log("Skipping fetch - already fetching:", selectedSize);
       return;
     }
 
-    // Skip if the current product already matches the selected size
-    if (currentProductSizeRef.current === selectedSize) {
-      return;
-    }
+    console.log("Fetching product:", {
+      previousSize: previousSizeRef.current,
+      selectedSize,
+      baseSlug,
+    });
 
+    // Store the previous size for error recovery
+    const prevSize = previousSizeRef.current;
     const productSlug = `${baseSlug}-${selectedSize.toLowerCase()}`;
     fetchingRef.current = selectedSize;
     setIsLoading(true);
@@ -68,18 +72,34 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
         setIsLoading(false);
         fetchingRef.current = null;
         
+        console.log("Product fetched:", {
+          success: data.success,
+          productSize: data.product?.size,
+          selectedSize,
+          productSlug,
+        });
+        
         if (data.success && data.product) {
           // Verify the fetched product matches the selected size
           if (data.product.size === selectedSize) {
+            console.log("Setting product state:", {
+              before: product?.size,
+              after: data.product.size,
+              productData: data.product,
+            });
+            // Update product state first
             setProduct(data.product);
-            currentProductSizeRef.current = data.product.size;
-            // Update URL without page reload
-            window.history.replaceState(null, "", `/product/${productSlug}`);
+            // Only update previousSizeRef AFTER successful fetch
+            previousSizeRef.current = selectedSize;
+            // Don't update URL to avoid triggering Next.js navigation/re-render
+            // The URL will update naturally if user refreshes or navigates away
+            console.log("Product updated successfully - state should now show:", data.product.size);
           } else {
             console.error(`Product size mismatch: expected ${selectedSize}, got ${data.product.size}`);
             alert(`Product size mismatch. Expected ${selectedSize} but got ${data.product.size}.`);
           }
         } else {
+          console.error("Product fetch failed - no product in response:", data);
           alert(`Product ${productSlug} not found. Please make sure both A3 and A4 variants exist.`);
         }
       })
@@ -111,6 +131,15 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
     };
   }, [baseSlug, selectedSize]);
 
+  // Debug: Log when product changes
+  useEffect(() => {
+    console.log("Product state changed:", {
+      productSize: product?.size,
+      productPrice: product?.price,
+      productSlug: product?.slug,
+      selectedSize,
+    });
+  }, [product, selectedSize]);
 
   if (!product && !isLoading) return notFound();
   
@@ -201,7 +230,10 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
             {availableSizes.map((size) => (
               <button
                 key={size}
-                onClick={() => setSelectedSize(size)}
+                onClick={() => {
+                  console.log("Button clicked:", size, "Current selectedSize:", selectedSize);
+                  setSelectedSize(size);
+                }}
                 className={`rounded-full border px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all ${
                   selectedSize === size
                     ? "border-cyan-neon bg-cyan-neon text-black shadow-neon"
