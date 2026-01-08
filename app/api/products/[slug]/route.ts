@@ -3,8 +3,7 @@ import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
 // GET single product by slug
-// Cache for 60 seconds
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
