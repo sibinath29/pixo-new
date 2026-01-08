@@ -3,6 +3,8 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 import { verifyToken, getTokenFromRequest } from "@/lib/jwt";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const token = getTokenFromRequest(req);

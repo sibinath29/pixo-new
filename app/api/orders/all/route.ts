@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Order from "@/models/Order";
 
+export const dynamic = 'force-dynamic';
+
 // GET all orders for admin (only paid orders)
 export async function GET(req: NextRequest) {
   try {

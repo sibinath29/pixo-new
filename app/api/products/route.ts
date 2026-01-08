@@ -3,8 +3,7 @@ import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
 // GET all products or filter by type
-// Cache for 60 seconds (ISR - Incremental Static Regeneration)
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
