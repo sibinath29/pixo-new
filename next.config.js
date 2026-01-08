@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ensure static files are served correctly
-  output: 'standalone',
-  
   // Optimize images
   images: {
     domains: [],
