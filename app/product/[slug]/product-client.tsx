@@ -83,7 +83,6 @@ export default function ProductDetailClient({ initialProduct, slug }: Props) {
           // Verify the fetched product matches the selected size
           if (data.product.size === selectedSize) {
             console.log("Setting product state:", {
-              before: product?.size,
               after: data.product.size,
               productData: data.product,
             });
