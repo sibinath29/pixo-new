@@ -152,17 +152,24 @@ export async function PUT(
     };
     
     // Keep priceA3 and priceA4 for backward compatibility if provided
+    let parsedPriceA3: number | null = null;
+    let parsedPriceA4: number | null = null;
+    
     if (priceA3 !== undefined && priceA3 !== null && priceA3 !== "") {
-      const parsedPriceA3 = typeof priceA3 === 'number' ? priceA3 : parseFloat(String(priceA3));
+      parsedPriceA3 = typeof priceA3 === 'number' ? priceA3 : parseFloat(String(priceA3));
       if (!isNaN(parsedPriceA3) && parsedPriceA3 > 0) {
         updateData.$set.priceA3 = parsedPriceA3;
+      } else {
+        parsedPriceA3 = null;
       }
     }
     
     if (priceA4 !== undefined && priceA4 !== null && priceA4 !== "") {
-      const parsedPriceA4 = typeof priceA4 === 'number' ? priceA4 : parseFloat(String(priceA4));
+      parsedPriceA4 = typeof priceA4 === 'number' ? priceA4 : parseFloat(String(priceA4));
       if (!isNaN(parsedPriceA4) && parsedPriceA4 > 0) {
         updateData.$set.priceA4 = parsedPriceA4;
+      } else {
+        parsedPriceA4 = null;
       }
     }
 
@@ -237,14 +244,14 @@ export async function PUT(
       title,
       category,
       type,
-      price: Number(parsedPriceA4), // Set to A4 price for backward compatibility
+      price: updateData.$set.priceA4 || parsedPrice, // Set to A4 price for backward compatibility, fallback to main price
       sizes,
       description,
       tag: tag || "",
       accent: accent || "#08f7fe",
       image: image || "",
-      priceA3: Number(parsedPriceA3), // CRITICAL: Explicitly set as number
-      priceA4: Number(parsedPriceA4), // CRITICAL: Explicitly set as number
+      priceA3: updateData.$set.priceA3 || null, // CRITICAL: Explicitly set as number
+      priceA4: updateData.$set.priceA4 || null, // CRITICAL: Explicitly set as number
     };
 
     // Add salePrice fields if they exist in updateData.$set
